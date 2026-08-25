@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:all": "python start_dev.py",
+    "dev:backend": "python -m uvicorn backend.app.main:app --reload --port 8000",
+    "scraper:demo": "python -m scraper.run_demo",
+    "test:backend": "python tests/test_backend.py",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -60,6 +60,7 @@ export function LiveProvider({ children }: { children: React.ReactNode }) {
     liveFeed.start();
     setConnected(liveFeed.connected);
     const unsub = liveFeed.subscribe((event) => {
+      setConnected(true);
       setLastUpdateAt(event.ts);
       if (event.type === "index.tick") setIndexValue(event.value);
       if (event.type === "anomaly.new") {

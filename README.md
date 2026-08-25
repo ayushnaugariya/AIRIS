@@ -6,128 +6,122 @@
 > Scraping of Airline and Online Travel Aggregator Portals for Augmentation of the
 > Consumer Price Index (CPI).
 
-AIRIS is an **economic intelligence + airfare analytics platform** — not a travel
-booking site. It monitors India's airfare market through a near-real-time national
-index, route-level pressure modelling, explainable anomaly detection, probabilistic
-forecasting and a fare-quality engine that keeps every comparison honest.
+AIRIS is a complete end-to-end **economic intelligence + airfare analytics platform** connecting automated multi-source scrapers, a validation gate and comparability engine, a FastAPI analytics backend, and an interactive Next.js intelligence dashboard.
 
 ---
 
-## Tech stack
+## Unified System Architecture
 
-| Layer      | Choice                                                        |
-| ---------- | ------------------------------------------------------------- |
-| Framework  | Next.js 14 (App Router) · React 18 · TypeScript               |
-| Styling    | Tailwind CSS · shadcn/ui-style primitives (Radix UI)          |
-| Charts     | Recharts (primary) · Plotly.js (fare-surface heatmap)         |
-| Geo        | Deck.gl 9 (arc map, token-free CARTO basemap tiles)           |
-| Icons      | Lucide React                                                  |
-| Motion     | Framer Motion (150–300 ms micro-interactions only)            |
+```
+AIRIS/
+├── backend/                  # FastAPI Backend API & Analytics Service
+│   ├── app/
+│   │   ├── main.py           # Application entrypoint & CORS middleware
+│   │   ├── database.py       # SQLite / PostgreSQL engine & session manager
+│   │   ├── models.py         # SQLAlchemy ORM models
+│   │   ├── schemas.py        # Pydantic schemas (1:1 with frontend TypeScript)
+│   │   ├── services.py       # Laspeyres index calculation & forecasting engine
+│   │   ├── seed.py           # Rich demo data seeder
+│   │   └── routers/          # REST endpoints & WebSocket live stream
+│   │       ├── indices.py    # Summary, 90d series, regional & airline indices
+│   │       ├── routes.py     # Sector insights, fare trends, booking curves
+│   │       ├── fares.py      # Comparability & quality dimension scoring
+│   │       ├── anomalies.py  # Explainable AI anomaly detection alerts
+│   │       ├── forecasts.py  # 7/14/30-day forecast trajectories & confidence
+│   │       ├── sources.py    # Ingestion health, pipeline status & metrics
+│   │       ├── scraper.py    # On-demand scraper trigger endpoint
+│   │       └── ws.py         # Real-time WebSocket live ticker & pulses
+│   └── requirements.txt      # Python dependencies (FastAPI, SQLAlchemy, NumPy...)
+│
+├── scraper/                  # Multi-Source Scraping & Validation Pipeline
+│   ├── adapters/             # Pluggable source adapters
+│   │   ├── base.py           # Abstract adapter contract & error hierarchy
+│   │   ├── mock_adapter.py   # High-speed deterministic fallback generator
+│   │   ├── amadeus_adapter.py# Live Amadeus Self-Service API connector
+│   │   └── generic_ota_adapter.py # OTA scraping template with DOM hooks
+│   ├── validator.py          # Statistical z-score bounds & cross-source agreement
+│   ├── stealth.py            # Playwright browser stealth & proxy rotation
+│   ├── behavior.py           # Humanized timing & randomized interaction jitter
+│   ├── pipeline.py           # Concurrent collection, normalization & DB persistence
+│   └── run_demo.py           # CLI scraper execution & sanity test runner
+│
+├── src/                      # Next.js 14 Frontend Intelligence Dashboard
+│   ├── app/                  # Routes: /, index-explorer, routes, airlines,
+│   │                         # anomalies, forecasts, fare-quality, data-sources, map
+│   ├── components/           # UI components, layout shell, Recharts, Deck.gl map
+│   ├── lib/api/              # REST client consuming FastAPI backend
+│   └── lib/ws/live-feed.ts   # WebSocket feed client
+│
+├── tests/                    # Backend automated validation test suite
+│   └── test_backend.py       # 18-endpoint test suite verifying all routes & schemas
+├── start_dev.py              # Concurrent orchestrator (starts Backend + Frontend)
+└── .env.local                # Local environment configuration
+```
 
-## Run locally
+---
+
+## Getting Started
+
+### 1. Prerequisites
+- **Node.js** v18+ and **npm**
+- **Python** 3.10+
+
+### 2. Quick Setup
 
 ```bash
+# 1. Install frontend dependencies
 npm install
-npm run dev      # http://localhost:3000
-npm run lint
-npm run build && npm start
+
+# 2. Setup Python virtual environment & backend dependencies
+python -m venv .venv
+.\.venv\Scripts\pip install -r backend/requirements.txt   # (On Windows)
+# source .venv/bin/activate && pip install -r backend/requirements.txt  # (On macOS/Linux)
 ```
 
-No API keys are required. The app runs fully on deterministic mock data until the
-FastAPI backend is connected.
-
-## Environment variables
-
-Copy `.env.example` → `.env.local`:
-
-| Variable                   | Purpose                                                                 |
-| -------------------------- | ----------------------------------------------------------------------- |
-| `NEXT_PUBLIC_API_BASE_URL` | FastAPI REST base URL. **Empty = mock mode.** e.g. `http://localhost:8000` |
-| `NEXT_PUBLIC_WS_URL`       | WebSocket endpoint for the live feed. Empty = built-in mock feed.        |
-
-## Architecture
-
-```
-src/
-├─ app/                    # Routes: /, index-explorer, routes, airlines,
-│                          # anomalies, forecasts, fare-quality, data-sources
-├─ components/
-│  ├─ layout/              # AppShell, Sidebar, Topbar, PageHeader, BrandMark
-│  ├─ dashboard/           # KPICard, IndexChart, RouteMap, panels…
-│  ├─ routes/              # RouteHero, FareTrend, BookingWindow, FareSurface…
-│  ├─ anomalies/           # AnomalyTable, AnomalyDetail, SeverityBadge
-│  ├─ forecasts/           # ForecastChart, SummaryCards, ConfidenceMeter
-│  ├─ fares/               # QualityScoreRing, Dimensions, ComparisonTable
-│  ├─ sources/             # SourceCard, PipelineFlow, IngestionLog
-│  ├─ providers/           # Theme, Filters, Live feed contexts
-│  └─ ui/                  # Buttons, badges, selects, states, tooltips…
-├─ hooks/                  # useApiData — loading / error / empty handling
-├─ lib/
-│  ├─ api/                 # ← THE BACKEND SEAM (client, indices, routes,
-│  │                       #   anomalies, forecasts, fares, sources)
-│  ├─ mock/                # Deterministic mock services + realistic data
-│  └─ ws/live-feed.ts      # Mock WebSocket abstraction (replaceable)
-└─ types/                  # Shared API contracts (AirfareIndex, Anomaly, …)
-```
-
-## Backend integration points (FastAPI teammate)
-
-The UI never calls `fetch` directly. Everything goes through
-`src/lib/api/index.ts`:
-
-```ts
-import { airisApi } from "@/lib/api";
-
-const summary   = await airisApi.indices.getSummary();
-const series    = await airisApi.indices.getSeries();
-const routes    = await airisApi.routes.list();
-const anomalies = await airisApi.anomalies.list();
-const forecast  = await airisApi.forecasts.getSummary(7);
-const quality   = await airisApi.fares.getQualityScore();
-const sources   = await airisApi.sources.getPipeline();
-```
-
-Each module documents its intended REST mapping, e.g.
-`indices.getSummary()` → `GET {NEXT_PUBLIC_API_BASE_URL}/api/v1/index/summary`.
-When the base URL is set the same call switches from mock to REST — no UI changes.
-
-Expected response shapes live in `src/types/index.ts`
-(`IndexSummary`, `SeriesResponse`, `RouteInsight`, `Anomaly`, `ForecastSummary`,
-`FareObservation`, `FareQualityScore`, `DataSource`, `PricePressureEntry`, …).
-
-Live stream protocol (`src/lib/ws/live-feed.ts`):
-
-```jsonc
-{ "type": "index.tick",  "value": 128.7, "delta": 0.1, "ts": "..." }
-{ "type": "anomaly.new", "anomaly": { /* Anomaly */ } }
-{ "type": "ingestion",   "source": "MakeMyTrip", "records": 1204 }
-```
-
-## Mock data location
-
-`src/lib/mock/` — seeded PRNG so every reload shows identical numbers during a demo:
-`airports.ts` (20 airports with coordinates), `routes-data.ts` (30 sectors),
-`series.ts` (90-day index history + 14-day forecast), `handlers.ts` (anomalies,
-fares, sources, pipeline, pressure ranking).
-
-## Demo flow (2 minutes)
-
-1. **Overview** — national index KPIs, hero chart with event annotations.
-2. **Map** — hover DEL → BOM arc; click to open Route Intelligence.
-3. **Route page** — fare trend, booking-window curve, composition, comparables.
-4. **Fare Quality** — comparability score 92/100, raw vs normalized toggle.
-5. **Anomaly Center** — click critical row: expected vs observed + contributors.
-6. **Forecasts** — 7-day outlook with confidence interval.
-
-## Git workflow
+### 3. Run Everything in One Command
 
 ```bash
-git checkout -b feature/airis-frontend
-git add .
-git commit -m "feat: build AIRIS intelligence dashboard frontend"
-git push -u origin feature/airis-frontend
+python start_dev.py
+# or
+npm run dev:all
+```
+This boots:
+- **FastAPI Backend Server**: [http://localhost:8000](http://localhost:8000) (Interactive Swagger Docs: [http://localhost:8000/docs](http://localhost:8000/docs))
+- **Live WebSocket Stream**: `ws://localhost:8000/ws/live`
+- **Next.js Dashboard**: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## Standalone Commands & CLI Tools
+
+| Command | Purpose |
+| ------- | ------- |
+| `npm run dev:backend` | Starts the FastAPI backend with hot reloading on port 8000 |
+| `npm run scraper:demo` | Runs the multi-adapter scraping & validation pipeline against the database |
+| `npm run test:backend` | Runs the automated backend verification test suite (18 endpoints) |
+| `npm run dev` | Runs the Next.js frontend alone on port 3000 |
+| `npm run build` | Builds the production Next.js application bundle |
+
+---
+
+## Live Scraping with Amadeus API (Optional)
+
+To enable live flight data through Amadeus Self-Service APIs:
+
+```bash
+set AMADEUS_CLIENT_ID=your_client_id
+set AMADEUS_CLIENT_SECRET=your_client_secret
+python -m scraper.run_demo --amadeus
 ```
 
 ---
 
-Built for internal-round judging · dark-first design tuned for 1440×900 projection.
+## Demo Flow (2 Minutes)
+
+1. **National Index Overview** — Laspeyres index KPIs, 90-day time-series with fuel/demand/policy annotations, and live real-time price feed.
+2. **Interactive Route Map** — Deck.gl arc visualization across India's domestic flight corridors.
+3. **Route Intelligence** — Dynamic fare trends, advance booking window curves, fare unbundling composition, and standardized comparables.
+4. **Fare Quality & Comparability Engine** — Normalized 15kg baggage baseline, ancillary breakdown, and quarantine audit trail.
+5. **AI Early Warning & Anomalies** — Detected surge spikes, root cause drivers, carrier coordination flags, and resolution workflow.
+6. **Probabilistic Forecasting** — 7/14/30-day forecast trajectories with confidence bands.
+7. **Data Sources & Pipeline** — Direct Airline vs OTA ingestion metrics, latency, data quality percentages, and pipeline health.

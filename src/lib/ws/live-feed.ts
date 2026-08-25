@@ -155,15 +155,38 @@ export class LiveFeed {
   }
 
   private connectReal(): void {
+    if (typeof window === "undefined") return;
     try {
       this.socket = new WebSocket(apiConfig.wsUrl);
+
+      this.socket.onopen = () => {
+        // Broadcast an initial tick to confirm connection
+        this.emit({ type: "index.tick", value: this.value, delta: 0, ts: Date.now() });
+      };
+
       this.socket.onmessage = (msg) => {
         try {
-          const parsed = JSON.parse(msg.data as string) as FeedEvent & { ts?: string };
-          this.emit({ ...parsed, ts: parsed.ts ? Date.parse(parsed.ts) : Date.now() } as FeedEvent);
+          const parsed = JSON.parse(msg.data as string) as FeedEvent & { ts?: string | number };
+          let ts = Date.now();
+          if (typeof parsed.ts === "number" && !isNaN(parsed.ts)) {
+            ts = parsed.ts;
+          } else if (typeof parsed.ts === "string") {
+            const parsedNum = Number(parsed.ts);
+            ts = !isNaN(parsedNum) ? parsedNum : (Date.parse(parsed.ts) || Date.now());
+          }
+          this.emit({ ...parsed, ts } as FeedEvent);
         } catch {
           /* ignore malformed frames */
         }
+      };
+
+      this.socket.onclose = () => {
+        // Auto-reconnect after 3 seconds
+        setTimeout(() => {
+          if (this.socket?.readyState !== WebSocket.OPEN) {
+            this.connectReal();
+          }
+        }, 3000);
       };
     } catch {
       /* socket unavailable — stay silent in demo */
