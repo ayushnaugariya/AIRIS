@@ -13,6 +13,109 @@
 
 ---
 
+## ⚡ Quick Start — Run in 2 Steps (Even a Baby Can Do It!)
+
+### 🪟 On Windows (PowerShell or Terminal)
+
+Open **PowerShell** in the project folder and copy-paste these two steps:
+
+#### **Step 1: First-Time Setup (Run once)**
+```powershell
+# 1. Install frontend packages
+npm install
+
+# 2. Create Python virtual environment & install backend packages
+python -m venv .venv
+.\.venv\Scripts\pip install -r backend/requirements.txt
+```
+
+#### **Step 2: Start the System!**
+```powershell
+python start_dev.py
+```
+*(Or if you prefer npm: `npm run dev:all`)*
+
+---
+
+### 🍎 On macOS / Linux (Terminal)
+
+#### **Step 1: First-Time Setup (Run once)**
+```bash
+# 1. Install frontend packages
+npm install
+
+# 2. Create Python virtual environment & install backend packages
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+```
+
+#### **Step 2: Start the System!**
+```bash
+python3 start_dev.py
+```
+
+---
+
+## 🌐 That's It! Open These Links in Your Browser:
+
+| What you want to see | Open this link | What it shows |
+| :--- | :--- | :--- |
+| 📊 **Main Web Dashboard** | **[http://localhost:3000](http://localhost:3000)** | Full National Index, Live Prices & Inflation KPIs |
+| 🗺️ **India Airfare Map** | **[http://localhost:3000/map](http://localhost:3000/map)** | Interactive 3D route map across Indian cities |
+| 🛫 **Route Intelligence** | **[http://localhost:3000/routes](http://localhost:3000/routes)** | Advance booking curves & unbundled taxes (Delhi, Mumbai, Chennai, etc.) |
+| 🚨 **AI Anomaly Center** | **[http://localhost:3000/anomalies](http://localhost:3000/anomalies)** | Root-cause price surge alerts & resolution workflow |
+| 📈 **7–30 Day Forecasts** | **[http://localhost:3000/forecasts](http://localhost:3000/forecasts)** | Future price predictions with confidence intervals |
+| ⚖️ **Fare Quality Engine** | **[http://localhost:3000/fare-quality](http://localhost:3000/fare-quality)** | 15kg check-in baggage normalization audit |
+| 📡 **Pipeline Health** | **[http://localhost:3000/data-sources](http://localhost:3000/data-sources)** | Live scraper & API connector status |
+| ⚡ **FastAPI Backend Docs** | **[http://localhost:8000/docs](http://localhost:8000/docs)** | Live interactive Swagger testing for all 18 backend endpoints |
+
+---
+
+## ❓ Troubleshooting & FAQs
+
+<details>
+<summary><b>🔴 Issue: "Port 3000 is already in use"</b></summary>
+
+If port 3000 is busy, Next.js will automatically open on **`http://localhost:3001`** or **`http://localhost:3002`**.  
+Check the terminal output to see which port it selected.  
+To free port 3000 on Windows:
+```powershell
+# Stop any orphaned node processes
+Stop-Process -Name node -Force
+```
+</details>
+
+<details>
+<summary><b>🔴 Issue: "python: command not found"</b></summary>
+
+Make sure Python 3.10+ is installed from [python.org](https://python.org). On Windows, make sure you checked the box: **"Add Python to PATH"** during installation.  
+On macOS/Linux, type `python3` instead of `python`.
+</details>
+
+<details>
+<summary><b>🔴 Issue: "How do I test the scraper directly?"</b></summary>
+
+Run the standalone demo scraper with 1 command:
+```powershell
+python -m scraper.run_demo
+```
+This scrapes multiple routes, validates prices through statistical $z$-scores, and saves clean records straight to the database.
+</details>
+
+<details>
+<summary><b>🔴 Issue: "How do I run the automated backend tests?"</b></summary>
+
+Run the full test suite with 1 command:
+```powershell
+.\.venv\Scripts\python tests/test_backend.py
+# or: npm run test:backend
+```
+It tests all 18 REST endpoints and verifies database seeding.
+</details>
+
+---
+
 ## 📌 Executive Summary
 
 **AIRIS (Airfare Intelligence & Real-Time Index System)** is an enterprise economic intelligence and regulatory monitoring platform designed for statistical bodies (e.g., MoSPI/CSO), aviation authorities (DGCA), and market analysts.
@@ -125,97 +228,17 @@ AIRIS/
 
 ---
 
-## ⚡ Quick Start
-
-### 1. Prerequisites
-- **Node.js** v18.0+ & **npm**
-- **Python** 3.10+
-
-### 2. Installation
-
-```bash
-# Clone repository
-git clone https://github.com/ayushnaugariya/AIRIS.git
-cd AIRIS
-
-# Install frontend dependencies
-npm install
-
-# Setup Python virtual environment & backend dependencies
-python -m venv .venv
-.\.venv\Scripts\pip install -r backend/requirements.txt   # Windows
-# source .venv/bin/activate && pip install -r backend/requirements.txt  # macOS / Linux
-```
-
-### 3. Run the Full System (One Command)
-
-```bash
-python start_dev.py
-# or
-npm run dev:all
-```
-
-- **Frontend Intelligence Dashboard**: [http://localhost:3000](http://localhost:3000)
-- **FastAPI Interactive Docs (Swagger)**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **Live WebSocket Endpoint**: `ws://localhost:8000/ws/live`
-
----
-
-## 🛠 Available Scripts & CLI Tools
+## 🛠 Available Helper Commands
 
 | Command | Description |
 | :--- | :--- |
-| `npm run dev:all` | Launches both the FastAPI backend and Next.js frontend concurrently |
+| `python start_dev.py` | Launches both FastAPI backend & Next.js frontend together |
+| `npm run dev:all` | Same as `start_dev.py` |
 | `npm run dev:backend` | Starts only the FastAPI backend server on `http://127.0.0.1:8000` |
 | `npm run dev` | Starts only the Next.js frontend on `http://localhost:3000` |
 | `npm run scraper:demo` | Runs the multi-adapter scraping & validation pipeline against the database |
 | `npm run test:backend` | Executes the automated 18-endpoint validation test suite |
 | `npm run build` | Builds the production bundle for Next.js |
-
----
-
-## 📡 REST API Reference
-
-The FastAPI backend serves 18 endpoints structured across 7 functional domains:
-
-### 1. Indices Domain (`/api/v1/index`)
-- `GET /api/v1/index/summary` — National price index KPIs, YoY/MoM changes, and pressure rating.
-- `GET /api/v1/index/series?range=90d` — 90-day historical time-series with moving averages and forecast bands.
-- `GET /api/v1/index/regional` — Regional price indices across Northern, Western, Southern, Eastern hubs.
-- `GET /api/v1/index/airlines` — Airline-wise yield indices, market share %, and OTP metrics.
-- `GET /api/v1/index/market-stats` — Macroeconomic benchmarks (ATF fuel prices, seat load factors).
-
-### 2. Routes Domain (`/api/v1/routes`)
-- `GET /api/v1/routes` — Monitored domestic trunk and regional sector catalogue.
-- `GET /api/v1/routes/{id}` — In-depth sector intelligence (e.g., `DEL-BOM`).
-- `GET /api/v1/routes/{id}/fare-trend` — 30-day daily fare trajectories and moving averages.
-- `GET /api/v1/routes/{id}/booking-window` — Advance booking curve pricing escalation buckets (0–1d to 30d+).
-- `GET /api/v1/routes/{id}/fare-composition` — Unbundled component breakdown (Base, ATF, UDF, Taxes).
-- `GET /api/v1/routes/{id}/comparable-fares` — Standardized product tier comparisons.
-- `GET /api/v1/routes/pressure` — Price pressure hotspot ranking.
-
-### 3. Fare Quality Domain (`/api/v1/fares`)
-- `GET /api/v1/fares/quality?route={id}` — Comparability audit score and 5-dimension validation breakdown.
-- `GET /api/v1/fares/observations?route={id}` — High-frequency normalized observation log.
-
-### 4. AI Anomalies Domain (`/api/v1/anomalies`)
-- `GET /api/v1/anomalies` — Detected price spike alerts and explainability drivers.
-- `GET /api/v1/anomalies/stats` — Severity breakdown and resolution rates.
-- `PATCH /api/v1/anomalies/{id}/status` — Update anomaly resolution state (`open`, `acknowledged`, `resolved`).
-
-### 5. Forecasts Domain (`/api/v1/forecasts`)
-- `GET /api/v1/forecasts/summary?horizon={7|14|30}` — Probabilistic outlook and expected inflation delta.
-- `GET /api/v1/forecasts/routes` — Sector-wise predicted trajectories.
-- `GET /api/v1/forecasts/confidence` — Model confidence distribution.
-
-### 6. Sources & Pipeline Health (`/api/v1`)
-- `GET /api/v1/sources` — Active airline API and OTA connector health.
-- `GET /api/v1/sources/stats?category={airline|ota}` — Ingestion volume and quality pass rates.
-- `GET /api/v1/pipeline` — 4-stage pipeline telemetry.
-- `GET /api/v1/system/status` — Platform operational state and uptime.
-
-### 7. Scraper Operations (`/api/v1/scraper`)
-- `POST /api/v1/scraper/trigger` — Trigger on-demand asynchronous collection jobs across target sectors.
 
 ---
 
@@ -241,7 +264,7 @@ python -m scraper.run_demo --amadeus
 
 1. **National Airfare Index**: Inspect the live Laspeyres index (128.5), macroeconomic indicators, and the 90-day time-series annotated with regulatory/fuel revisions.
 2. **Interactive Route Map**: Explore India's domestic aviation network with GPU-accelerated Deck.gl arcs highlighting high-pressure corridors.
-3. **Route Intelligence**: Select `DEL → BOM` to inspect historical yield curves, advance booking steepness, unbundled taxes, and comparable fares.
+3. **Route Intelligence**: Select `DEL → BOM` or `MAA → DEL` to inspect historical yield curves, advance booking steepness, unbundled taxes, and comparable fares.
 4. **Comparability & Fare Quality**: Review the 94.6/100 quality score and how 15kg baggage standardizations prevent unbundling bias.
 5. **AI Early Warning & Anomalies**: Inspect real-time price alerts, explainable root-cause contributors, and acknowledge/resolve flagged items.
 6. **Probabilistic Forecasting**: Toggle 7, 14, and 30-day forecast horizons with confidence envelopes.
