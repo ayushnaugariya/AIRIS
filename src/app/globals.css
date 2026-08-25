@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ------------------------------------------------------------------ */
+/* AIRIS design tokens — dark (midnight) is the default theme.         */
+/* ------------------------------------------------------------------ */
+
+:root,
+[data-theme="dark"] {
+  --background: 218 50% 7%;
+  --foreground: 210 40% 96%;
+  --card: 219 44% 10%;
+  --card-foreground: 210 40% 96%;
+  --popover: 220 42% 11%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 221 83% 53%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 199 92% 61%;
+  --accent-foreground: 222 47% 8%;
+  --muted: 218 30% 14%;
+  --muted-foreground: 216 16% 62%;
+  --border: 217 30% 18%;
+  --input: 217 30% 20%;
+  --ring: 221 83% 53%;
+  --success: 172 66% 46%;
+  --warning: 38 92% 50%;
+  --danger: 0 84% 60%;
+  --radius: 0.5rem;
+}
+
+[data-theme="light"] {
+  --background: 210 40% 97%;
+  --foreground: 222 47% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 9%;
+  --primary: 221 83% 48%;
+  --primary-foreground: 210 40% 98%;
+  --accent: 199 92% 36%;
+  --accent-foreground: 210 40% 98%;
+  --muted: 214 32% 93%;
+  --muted-foreground: 215 19% 40%;
+  --border: 214 28% 86%;
+  --input: 214 28% 84%;
+  --ring: 221 83% 48%;
+  --success: 173 80% 34%;
+  --warning: 32 95% 40%;
+  --danger: 0 72% 48%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  ::selection {
+    background: rgba(37, 99, 235, 0.35);
+  }
+
+  /* Refined scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring) / 0.7);
+    outline-offset: 2px;
+  }
+}
+
+@layer utilities {
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label-xs {
+    @apply text-[10px] font-medium uppercase tracking-[0.08em] text-muted-foreground;
+  }
+
+  .panel-glow {
+    position: relative;
+  }
+  .panel-glow::before {
+    content: "";
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/60 to-transparent;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .arc-flow {
+    stroke-dasharray: 0.7 0.9;
+    animation: arc-dash 1.4s linear infinite;
+  }
+}
+
+@keyframes arc-dash {
+  to {
+    stroke-dashoffset: -1.6;
+  }
+}
