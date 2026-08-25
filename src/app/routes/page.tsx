@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/layout/page-header";
@@ -25,34 +25,31 @@ import { formatINR, formatPct } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 function RoutesInner() {
+  const router = useRouter();
   const params = useSearchParams();
   const filters = useFilters();
-  const initial = params.get("id") ?? (filters.routeId !== "all" ? filters.routeId : "DEL-BOM");
-  const [routeId, setRouteId] = useState(initial);
+
+  const paramId = params.get("id");
+  const activeRouteId = (filters.routeId && filters.routeId !== "all") ? filters.routeId : (paramId || "DEL-BOM");
   const [query, setQuery] = useState("");
 
-  // The global topbar selector drives this page; local selection updates the global filter.
+  // Sync URL query on mount if param provided
   useEffect(() => {
-    const fromFilter = filters.routeId;
-    if (fromFilter && fromFilter !== "all" && fromFilter !== routeId) setRouteId(fromFilter);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.routeId]);
+    if (paramId && paramId !== filters.routeId) {
+      filters.setRouteId(paramId);
+    }
+  }, [paramId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSelect = (id: string) => {
-    setRouteId(id);
     filters.setRouteId(id);
+    router.replace(`/routes?id=${encodeURIComponent(id)}`, { scroll: false });
   };
 
-  useEffect(() => {
-    if (params.get("id") && params.get("id") !== routeId) setRouteId(params.get("id") as string);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params]);
-
-  const insight = useApiData(() => airisApi.routes.get(routeId), [routeId]);
-  const trend = useApiData(() => airisApi.routes.getFareTrend(routeId), [routeId]);
-  const booking = useApiData(() => airisApi.routes.getBookingWindow(routeId), [routeId]);
-  const composition = useApiData(() => airisApi.routes.getFareComposition(routeId), [routeId]);
-  const comparables = useApiData(() => airisApi.routes.getComparableFares(routeId), [routeId]);
+  const insight = useApiData(() => airisApi.routes.get(activeRouteId), [activeRouteId]);
+  const trend = useApiData(() => airisApi.routes.getFareTrend(activeRouteId), [activeRouteId]);
+  const booking = useApiData(() => airisApi.routes.getBookingWindow(activeRouteId), [activeRouteId]);
+  const composition = useApiData(() => airisApi.routes.getFareComposition(activeRouteId), [activeRouteId]);
+  const comparables = useApiData(() => airisApi.routes.getComparableFares(activeRouteId), [activeRouteId]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -92,11 +89,11 @@ function RoutesInner() {
                 <li key={r.id}>
                   <button
                     onClick={() => handleSelect(r.id)}
-                    aria-selected={r.id === routeId}
+                    aria-selected={r.id === activeRouteId}
                     role="option"
                     className={cn(
                       "flex w-full items-center justify-between gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-muted/60",
-                      r.id === routeId && "bg-primary/[0.08]"
+                      r.id === activeRouteId && "bg-primary/[0.08]"
                     )}
                   >
                     <span className="text-xs font-semibold num">{`${r.originCode} → ${r.destinationCode}`}</span>

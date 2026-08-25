@@ -104,7 +104,7 @@ export function Topbar({ onOpenMobileNav }: TopbarProps) {
           </SelectTrigger>
           <SelectContent className="max-h-72">
             <SelectItem value="all">All routes</SelectItem>
-            {ROUTES.slice(0, 14).map((r) => (
+            {ROUTES.map((r) => (
               <SelectItem key={r.id} value={r.id}>
                 {`${r.originCode} → ${r.destinationCode}`}
               </SelectItem>
