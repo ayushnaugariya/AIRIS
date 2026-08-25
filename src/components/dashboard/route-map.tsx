@@ -82,15 +82,34 @@ export default function RouteMap({ focusRouteId }: RouteMapProps) {
     setReady(true);
 
     // Guarantee the canvas always matches its container, even if CSS settles late.
-    const resize = () => (deck as unknown as { resize: () => void }).resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(containerRef.current);
+    const resize = () => {
+      if (!deck) return;
+      try {
+        const d = deck as unknown as { resize?: () => void; redraw?: (opt?: boolean) => void; setProps?: (props: Record<string, unknown>) => void };
+        if (typeof d.resize === "function") {
+          d.resize();
+        } else if (typeof d.redraw === "function") {
+          d.redraw(true);
+        } else if (typeof d.setProps === "function" && containerRef.current) {
+          d.setProps({
+            width: containerRef.current.clientWidth,
+            height: containerRef.current.clientHeight,
+          });
+        }
+      } catch {
+        // Ignore layout settle errors
+      }
+    };
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
+    if (ro && containerRef.current) {
+      ro.observe(containerRef.current);
+    }
     const t = setTimeout(resize, 60);
     window.addEventListener("resize", resize);
 
     return () => {
       clearTimeout(t);
-      ro.disconnect();
+      if (ro) ro.disconnect();
       window.removeEventListener("resize", resize);
       deck.finalize();
       deckRef.current = null;
