@@ -1,0 +1,12 @@
+# core pipeline — needed for run_demo.py
+pydantic>=2.5
+sqlalchemy>=2.0
+httpx>=0.27
+
+# scraping (only needed once you wire up real OTA adapters)
+playwright>=1.44
+playwright-stealth>=1.0.6
+
+# scheduled/distributed runs (only needed for tasks.py + scheduler.py)
+celery>=5.4
+redis>=5.0
